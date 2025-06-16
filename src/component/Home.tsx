@@ -128,7 +128,7 @@ const Home: React.FC = () => {
                             <div className="avatar">
                                 <img src={pic2} alt="avatar" />
                             </div>
-                            <div className="user_name">Quốc Zinh</div>
+                            <div className="user_name">Hiếu Kiên</div>
                         </div>
                     </li>
                     <li className="item_friend-list">
