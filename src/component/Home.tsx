@@ -31,7 +31,13 @@ const Home: React.FC = () => {
             const data = await response.json();
 
             if (data.status === 200) {
-                setPosts(data.message);
+                // Lọc bài viết có status = 1 và sắp xếp theo thời gian tạo, mới nhất lên đầu
+                const filteredAndSortedPosts = data.message
+                    .filter((post: Post) => post.status === 1)
+                    .sort((a: Post, b: Post) =>
+                        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                    );
+                setPosts(filteredAndSortedPosts);
             } else {
                 setError('Failed to fetch posts');
             }
