@@ -8,6 +8,7 @@ import love from '../assets/img/loveicon-removebg-preview.png';
 import haha from '../assets/img/hahaicon-removebg-preview.png';
 
 interface Post {
+    id: number;
     user_id: number;
     content: string;
     created_at: string;
@@ -20,6 +21,7 @@ const Home: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [newPostContent, setNewPostContent] = useState('');
     const [posting, setPosting] = useState(false);
+    const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
     useEffect(() => {
         fetchPosts();
@@ -76,6 +78,7 @@ const Home: React.FC = () => {
             if (data.status === 200) {
                 // Tạo bài viết mới với thời gian hiện tại
                 const newPost: Post = {
+                    id: data.message.id,
                     user_id: 1,
                     content: newPostContent,
                     created_at: new Date().toISOString(),
@@ -85,7 +88,6 @@ const Home: React.FC = () => {
                 // Thêm bài viết mới vào đầu danh sách
                 setPosts(prevPosts => [newPost, ...prevPosts]);
                 setNewPostContent(''); // Reset input
-                alert('Đăng bài thành công!');
             } else {
                 alert('Có lỗi xảy ra khi đăng bài!');
             }
@@ -94,6 +96,36 @@ const Home: React.FC = () => {
             alert('Có lỗi xảy ra khi đăng bài!');
         } finally {
             setPosting(false);
+        }
+    };
+
+    const handleDeletePost = async (postId: number) => {
+        setDeletingPostId(postId);
+
+        try {
+            const response = await fetch(`https://facecook-sever.onrender.com/api/users/post/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: postId,
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 200) {
+                // Xóa bài viết khỏi danh sách local
+                setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+            } else {
+                alert('Có lỗi xảy ra khi xóa bài viết!');
+            }
+        } catch (err) {
+            console.error('Error deleting post:', err);
+            alert('Có lỗi xảy ra khi xóa bài viết!');
+        } finally {
+            setDeletingPostId(null);
         }
     };
 
@@ -183,12 +215,25 @@ const Home: React.FC = () => {
                     </div>
 
                     {posts.map((post, index) => (
-                        <div key={index} className="post_1">
+                        <div key={post.id} className="post_1">
                             <div className="info_user-post">
                                 <div className="avatar"><img src={pic1} alt="avatar" /></div>
                                 <div className="info_user">
                                     <div className="user_name">MessiNgô</div>
                                     <div className="info_public">Public • {formatDate(post.created_at)}</div>
+                                </div>
+                                <div className="post-actions">
+                                    <button
+                                        className="delete-btn"
+                                        onClick={() => handleDeletePost(post.id)}
+                                        disabled={deletingPostId === post.id}
+                                    >
+                                        {deletingPostId === post.id ? (
+                                            <i className="bi bi-hourglass-split"></i>
+                                        ) : (
+                                            <i className="bi bi-trash"></i>
+                                        )}
+                                    </button>
                                 </div>
                             </div>
                             <div className="content">
